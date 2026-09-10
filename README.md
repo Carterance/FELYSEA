@@ -31,7 +31,7 @@ partant sur l'intensité.
 | Style | Tailwind CSS | Rapide à itérer, cohérent avec les tokens du design system |
 | Emails | Resend | API simple, bon niveau gratuit pour démarrer |
 | Tests | Vitest | Rapide, bonne intégration TypeScript |
-| Déploiement | Vercel + Postgres managé (Neon) | Zéro-config avec Next.js, cron intégré |
+| Déploiement | Render (web service) + Postgres managé Render | Un seul hébergeur pour l'app et la base, plan gratuit pour démarrer |
 
 ## Installation locale
 
@@ -128,44 +128,76 @@ Voir `src/db/schema.ts`. Points notables :
 
 ## Déploiement en production
 
+L'application est déployée sur [Render](https://render.com) : un *web
+service* Next.js (build : `npm install && npx drizzle-kit push --force &&
+npm run build`, start : `npx next start -p $PORT`) et une base Postgres
+managée Render, toutes deux dans la même région.
+
 ### 1. Base de données
 
-Créer une base PostgreSQL managée (ex: [Neon](https://neon.tech), plan
-gratuit suffisant pour démarrer). Récupérer l'URL de connexion.
+Créer une base PostgreSQL managée Render (Dashboard → New → PostgreSQL).
+Récupérer l'`Internal Database URL` (même région que le service) ou
+l'`External Database URL` (accessible depuis l'extérieur, utile en local).
 
-Générer et appliquer les migrations versionnées (préférable à `push` en
-production) :
+⚠️ Le plan gratuit Render Postgres **expire au bout de 30 jours et la base
+est supprimée** — passer sur un plan payant avant l'échéance pour ne pas
+perdre les données du couple. Voir le plan actuel et sa date d'expiration
+dans le Dashboard Render (section Info de la base).
+
+En développement/CI, `drizzle-kit push` suffit pour itérer vite. En
+production, préférer des migrations versionnées :
 
 ```bash
 npx drizzle-kit generate
 npx drizzle-kit migrate
 ```
 
-### 2. Vercel
+### 2. Web service (Render)
 
-```bash
-npm install -g vercel
-vercel
-```
+Créer un *Web Service* Render pointant sur ce dépôt GitHub, branche `main`,
+runtime Node :
 
-Renseigner dans les variables d'environnement du projet Vercel :
-`DATABASE_URL`, `AUTH_SECRET`, `NEXT_PUBLIC_APP_URL` (l'URL finale du
-déploiement), `RESEND_API_KEY`, `EMAIL_FROM`, `CRON_SECRET`.
+- Build command : `npm install && npx drizzle-kit push --force && npm run build`
+- Start command : `npx next start -p $PORT`
 
-Le fichier `vercel.json` déclenche automatiquement `/api/cron/notifications`
-tous les jours à 8h — Vercel injecte l'en-tête `Authorization: Bearer
-$CRON_SECRET` automatiquement si la variable est définie.
+Renseigner dans les variables d'environnement du service :
+`DATABASE_URL` (celle de la base créée ci-dessus), `AUTH_SECRET` (généré
+avec `npx auth secret`), `NEXT_PUBLIC_APP_URL` (l'URL finale
+`https://<nom-du-service>.onrender.com`), `RESEND_API_KEY`, `EMAIL_FROM`,
+`CRON_SECRET` (voir notifications ci-dessous).
 
-### 3. Emails
+`trustHost: true` est activé dans `src/auth.config.ts` : contrairement à
+Vercel, Render (et la plupart des hébergeurs) n'est pas reconnu comme hôte
+de confiance par défaut par Auth.js — sans ce flag, toutes les requêtes
+`/api/auth/*` échouent avec une erreur `UntrustedHost`.
+
+### 3. Notifications quotidiennes
+
+Render n'a pas d'offre de Cron Job gratuite. La planification est donc
+gérée par un workflow GitHub Actions
+(`.github/workflows/notifications-cron.yml`) qui appelle
+`/api/cron/notifications` tous les jours à 8h UTC avec l'en-tête
+`Authorization: Bearer $CRON_SECRET`.
+
+À configurer :
+1. Ajouter un secret `CRON_SECRET` dans les paramètres du dépôt GitHub
+   (Settings → Secrets and variables → Actions) — même valeur que la
+   variable d'environnement `CRON_SECRET` du service Render.
+2. Le workflow peut aussi être déclenché manuellement depuis l'onglet
+   Actions de GitHub (`workflow_dispatch`) pour tester sans attendre 8h.
+
+### 4. Emails
 
 Créer un compte [Resend](https://resend.com), vérifier un domaine d'envoi,
-récupérer la clé API.
+récupérer la clé API. Sans `RESEND_API_KEY` définie, les emails sont
+simplement loggés en console — pratique en développement, insuffisant en
+production.
 
 ## Sécurité — checklist
 
 - [x] Mots de passe hashés (argon2id)
 - [x] Sessions JWT signées (Auth.js)
-- [x] HTTPS (géré par Vercel)
+- [x] HTTPS (géré par l'hébergeur)
 - [x] Validation serveur systématique (Zod) sur toutes les server actions
 - [x] Isolation stricte des données entre couples
 - [x] Rate limiting sur inscription/connexion

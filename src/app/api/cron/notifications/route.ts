@@ -5,9 +5,11 @@ import { and, eq } from "drizzle-orm";
 import { sendReminderEmail, sendDayOfEmail, sendFollowUpEmail } from "@/lib/email";
 
 /**
- * Déclenchée une fois par jour (ex: Vercel Cron). Protégée par un secret
- * partagé pour empêcher tout appel externe non autorisé.
- * Configurer dans vercel.json + variable d'env CRON_SECRET.
+ * Déclenchée une fois par jour par le workflow GitHub Actions
+ * .github/workflows/notifications-cron.yml (Render n'a pas de Cron Job
+ * gratuit). Protégée par un secret partagé (CRON_SECRET, identique côté
+ * Render et dans le secret GitHub Actions du même nom) pour empêcher tout
+ * appel externe non autorisé.
  */
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
