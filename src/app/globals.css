@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+/*
+  Système de design — "rituel à la bougie"
+  Principe : une préparation intime et chaleureuse, pas un dashboard.
+  Palette sombre aubergine + doré antique, une seule touche de rose
+  poudré réservée au mood "romance". Bordures fines plutôt qu'ombres.
+*/
+
+:root {
+  --background: #1b1420;
+  --surface: #241b2b;
+  --surface-raised: #2c2233;
+  --foreground: #f3eae2;
+  --foreground-muted: #ab9ba1;
+  --accent: #c9a15a;
+  --accent-strong: #dcb771;
+  --rose: #c97c87;
+  --border: rgba(243, 234, 226, 0.14);
+  --border-strong: rgba(201, 161, 90, 0.45);
+  --danger: #d1685f;
+
+  --font-display: var(--font-fraunces);
+  --font-body: var(--font-inter);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-rose: var(--rose);
+  --color-border: var(--border);
+  --color-danger: var(--danger);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+}
+
+* {
+  border-color: var(--border);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body);
+}
+
+h1, h2, h3, .font-display {
+  font-family: var(--font-display);
+  font-weight: 480;
+  letter-spacing: -0.01em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
