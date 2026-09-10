@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { partnerAnswers, eveningPlans } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { RevealScreen } from "./reveal-screen";
+import { suggestCards } from "@/lib/matching";
 
 export default async function SoireePage({
   params,
@@ -47,5 +48,5 @@ export default async function SoireePage({
     );
   }
 
-  return <RevealScreen plan={plan} sessionId={sessionId} />;
+  return <RevealScreen plan={plan} sessionId={sessionId} cards={suggestCards(plan)} />;
 }

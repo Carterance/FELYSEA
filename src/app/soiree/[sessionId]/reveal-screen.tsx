@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { PrimaryButton } from "@/components/ui";
 import type { eveningPlans } from "@/db/schema";
+import type { EveningCard } from "@/lib/matching";
 
 type Plan = typeof eveningPlans.$inferSelect;
 
@@ -15,7 +16,15 @@ const MOOD_EMOJI: Record<string, string> = {
   intensite: "🔥",
 };
 
-export function RevealScreen({ plan }: { plan: Plan; sessionId: string }) {
+export function RevealScreen({
+  plan,
+  sessionId,
+  cards,
+}: {
+  plan: Plan;
+  sessionId: string;
+  cards: EveningCard[];
+}) {
   const [step, setStep] = useState<"waiting" | "revealed">("waiting");
 
   if (step === "waiting") {
@@ -55,11 +64,34 @@ export function RevealScreen({ plan }: { plan: Plan; sessionId: string }) {
         </ul>
       </div>
 
+      {cards.length > 0 && (
+        <div className="mt-6 w-full max-w-md">
+          <p className="mb-3 text-sm text-foreground-muted">Ou choisissez une carte</p>
+          <div className="grid grid-cols-3 gap-2">
+            {cards.map((card) => (
+              <div
+                key={card.id}
+                className="rounded-lg border border-border bg-surface p-3 text-center"
+                title={card.description}
+              >
+                <p className="text-sm text-foreground">{card.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <p className="mt-8 max-w-sm text-sm text-foreground-muted">
         Ces suggestions restent des idées, jamais une obligation — chacun peut
         toujours dire non ou changer d&apos;avis, ce soir comme n&apos;importe
         quel autre soir.
       </p>
+
+      <div className="mt-8">
+        <a href={`/journal/${sessionId}`} className="text-sm text-accent hover:text-accent-strong">
+          Comment était votre soirée ? →
+        </a>
+      </div>
     </main>
   );
 }

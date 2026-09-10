@@ -9,6 +9,7 @@ import { eq } from "drizzle-orm";
 import { DayPicker } from "./day-picker";
 import { PrimaryButton } from "@/components/ui";
 import { formatDayFr, daysUntil } from "@/lib/week";
+import { CoupleProgress } from "@/components/couple-progress";
 
 export default async function HomePage() {
   const session = await auth();
@@ -23,6 +24,23 @@ export default async function HomePage() {
   const { sessionId, chosenDay, status } = result.data;
 
   if (status === "ready" || status === "revealed") redirect(`/soiree/${sessionId}`);
+
+  if (status === "completed") {
+    return (
+      <main className="flex flex-1 flex-col px-6 py-16 sm:items-center">
+        <div className="w-full max-w-md">
+          <p className="text-foreground-muted">Bonjour {session.user.name} ❤️</p>
+          <h1 className="mt-2 font-display text-3xl text-foreground">
+            Votre rituel de cette semaine est terminé
+          </h1>
+          <p className="mt-3 text-foreground-muted">
+            Rendez-vous la semaine prochaine pour votre prochain moment à deux.
+          </p>
+          <CoupleProgress coupleId={coupleId} />
+        </div>
+      </main>
+    );
+  }
 
   const myAnswer = await db.query.partnerAnswers.findFirst({
     where: eq(partnerAnswers.sessionId, sessionId),
@@ -54,6 +72,8 @@ export default async function HomePage() {
             <DayPicker sessionId={sessionId} />
           </div>
         )}
+
+        <CoupleProgress coupleId={coupleId} />
       </div>
     </main>
   );

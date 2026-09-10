@@ -5,6 +5,7 @@ import { users } from "@/db/schema";
 import { eq, isNull, and } from "drizzle-orm";
 import { verifyPassword } from "@/lib/password";
 import { loginSchema } from "@/lib/validation";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   session: { strategy: "jwt" },
@@ -22,6 +23,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (!parsed.success) return null;
 
         const { email, password } = parsed.data;
+
+        const limit = rateLimit(`login:${email}`, { max: 8, windowMs: 5 * 60_000 });
+        if (!limit.allowed) return null;
 
         // Timing note: on garde un chemin de vérification à durée quasi
         // constante en appelant toujours verifyPassword, même si l'email

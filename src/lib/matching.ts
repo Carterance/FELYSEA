@@ -1,3 +1,47 @@
+export type EveningCard = {
+  id: string;
+  label: string;
+  description: string;
+};
+
+export const EVENING_CARDS: EveningCard[] = [
+  { id: "romance", label: "❤️ Romance", description: "Créer une ambiance romantique, à deux." },
+  { id: "surprise", label: "✨ Surprise", description: "L'un des deux choisit quelque chose pour l'autre." },
+  { id: "decouverte", label: "💫 Découverte", description: "Essayer quelque chose de nouveau pour le couple." },
+  { id: "douceur", label: "🌙 Douceur", description: "Une soirée très calme et tendre." },
+  { id: "jeu", label: "🎲 Jeu", description: "Créer une ambiance ludique." },
+  { id: "spontaneite", label: "🍃 Spontanéité", description: "Ne rien planifier à l'avance." },
+];
+
+/**
+ * Propose 3 cartes cohérentes avec le plan de la soirée, sans jamais répéter
+ * les cartes jouées récemment si une alternative existe.
+ */
+export function suggestCards(
+  plan: { mood: string },
+  recentCardIds: string[] = []
+): EveningCard[] {
+  const priority: Record<string, string[]> = {
+    romance: ["romance", "douceur", "surprise"],
+    douceur: ["douceur", "romance", "spontaneite"],
+    jeu: ["jeu", "surprise", "spontaneite"],
+    aventure: ["decouverte", "surprise", "jeu"],
+    nouveaute: ["decouverte", "surprise", "jeu"],
+    intensite: ["surprise", "decouverte", "romance"],
+  };
+
+  const preferredIds = priority[plan.mood] ?? ["romance", "douceur", "jeu"];
+  const allIds = EVENING_CARDS.map((c) => c.id);
+  const rankedPool = [...preferredIds, ...allIds.filter((id) => !preferredIds.includes(id))];
+  const fresh = rankedPool.filter((id) => !recentCardIds.includes(id));
+  const rest = rankedPool.filter((id) => recentCardIds.includes(id));
+  const finalIds = [...fresh, ...rest].slice(0, 3);
+
+  return finalIds
+    .map((id) => EVENING_CARDS.find((c) => c.id === id))
+    .filter((c): c is EveningCard => Boolean(c));
+}
+
 const INTENSITY_SCALE = ["soft", "sensual", "intense", "very_intense"] as const;
 type Intensity = (typeof INTENSITY_SCALE)[number];
 
