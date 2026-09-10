@@ -13,6 +13,13 @@ export const authConfig = {
   pages: {
     signIn: "/connexion",
   },
+  // Auth.js ne fait confiance qu'à l'hôte de la requête que sur Vercel par
+  // défaut. En dehors de Vercel (ex: Render), sans ce flag, chaque appel à
+  // /api/auth/* échoue avec `UntrustedHost`. Sûr ici : l'app n'est jamais
+  // exposée derrière un proxy qui laisserait un tiers falsifier le header
+  // Host, et NEXT_PUBLIC_APP_URL reste la seule URL canonique utilisée pour
+  // générer des liens (emails, etc.).
+  trustHost: true,
   providers: [],
   callbacks: {
     async jwt({ token, user }) {
