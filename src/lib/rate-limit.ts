@@ -1,10 +1,11 @@
 /**
  * Rate limiter en mémoire — suffisant pour un MVP sur une seule instance.
  *
- * ⚠️ En production multi-instance (Vercel serverless), chaque instance a
- * sa propre mémoire : ce limiteur devient approximatif. Avant un vrai
- * lancement public, remplacer par Upstash Redis (@upstash/ratelimit) qui
- * s'intègre en quelques lignes avec la même interface. Documenté dans le README.
+ * ⚠️ En production multi-instance (plusieurs instances serverless ou
+ * plusieurs conteneurs), chaque instance a sa propre mémoire : ce limiteur
+ * devient approximatif. Avant un vrai lancement public, remplacer par
+ * Upstash Redis (@upstash/ratelimit) qui s'intègre en quelques lignes avec
+ * la même interface. Documenté dans le README.
  */
 
 type Bucket = { count: number; resetAt: number };

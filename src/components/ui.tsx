@@ -1,4 +1,4 @@
-import { InputHTMLAttributes, LabelHTMLAttributes, ButtonHTMLAttributes } from "react";
+import { InputHTMLAttributes, ButtonHTMLAttributes } from "react";
 
 export function RitualPanel({ children }: { children: React.ReactNode }) {
   return (

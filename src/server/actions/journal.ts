@@ -1,10 +1,10 @@
 "use server";
 
 import { db } from "@/db";
-import { journalEntries, weeklySessions, badges, coupleMembers } from "@/db/schema";
+import { journalEntries, weeklySessions, badges } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 import { auth } from "@/auth";
-import { assertSessionAccess, getUserCoupleId } from "@/server/authorization";
+import { assertSessionAccess } from "@/server/authorization";
 import { z } from "zod";
 import type { ActionResult } from "./couple";
 
