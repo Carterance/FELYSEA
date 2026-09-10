@@ -1,11 +1,12 @@
 import type { NextAuthConfig } from "next-auth";
 
 /**
- * Config partagée entre le middleware (Edge Runtime) et la config complète
- * (Node runtime, dans auth.ts). Ne JAMAIS importer db/argon2/providers ici :
- * le middleware s'exécute en Edge Runtime, qui ne supporte pas les modules
- * Node natifs (node:crypto tel qu'utilisé par argon2/postgres). Le mettre
- * ici casserait le middleware au démarrage.
+ * Config partagée entre le proxy (src/proxy.ts, anciennement middleware.ts)
+ * et la config complète (dans auth.ts). Le proxy tourne en runtime Node.js
+ * depuis Next.js 16, mais reste volontairement minimal et chargé en premier
+ * sur chaque requête : ne JAMAIS y importer db/argon2/providers, pour garder
+ * ce chemin léger et éviter tout risque de régression si Next réintroduit
+ * une contrainte de runtime plus tard.
  */
 export const authConfig = {
   session: { strategy: "jwt" },
